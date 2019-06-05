@@ -1,0 +1,16 @@
+Package: nicereg
+Title: This function creates a table of formatted regression results for glm objects
+Version: 1.0
+Authors@R: "Lisa Rein <lisaerein@gmail.com> [aut, cre]"
+Description: This function creates a table of formatted regression results for glm objects. It returns a dataframe and
+    prints an html table by default for use in R markdown documents.
+Depends:
+    R (>= 3.4.4)
+Imports:
+    htmlTable
+License: CC0
+LazyData: true
+Suggests: knitr
+VignetteBuilder: knitr
+RoxygenNote: 6.1.0
+Encoding: UTF-8
