@@ -19,6 +19,8 @@
 #' @param exp Logical. Option to exponentiate coefficients and CI's. Default is NA (estimates exponentiated for binomial and poisson models by default).
 #' @param color Character. Color to use for htmlTable striping. Default is "#EEEEEE" (light grey). Use "white" for no striping.
 #' @param htmlTable Logical. If TRUE, the table will be optimized for html output. Default is TRUE.
+#' @param title Character. Optional title above table. Default is "".
+#' @param footer Logical. If TRUE, table will include a footnote with model details, nobs, R2. Default is TRUE.
 #' @keywords glm table logistic poisson linear regression reporting
 #' @importFrom htmlTable htmlTable
 #' @export 
@@ -38,7 +40,9 @@ niceglm    <- function(fit = NA,
                        ci.dec = 2,
                        pval.dec = 3,
                        color = "#EEEEEE",
-                       htmlTable = TRUE){
+                       htmlTable = TRUE,
+                       title = "",
+                       footer = TRUE){
     
     
     # check user inputs -------------------------------------------------------
@@ -46,7 +50,9 @@ niceglm    <- function(fit = NA,
     if (!is.na(fit[1])) regtype <- "multi"
     try(if (is.na(fit[1]) & (is.na(regtype) | !(regtype %in% c("uni", "multi")))) stop("regtype must be uni or multi"))
     
-    try(if (is.na(fit[1]) & (is.na(df[1]) | sum(!is.na(covs) == 0) | is.na(out) | is.na(family))) stop("must provide model object or dataframe + covariates + outcome + model family"))
+    if (is.na(fit[1])){
+        try(if (class(df) != "data.frame" | is.na(covs[1]) | is.na(out[1]) | is.na(family[1])) stop("must provide model object or dataframe + covariates + outcome + model family"))
+    }
     
     ### do not include intercepts for univariate tables
     if (regtype == "uni") intercept = FALSE
@@ -237,6 +243,7 @@ niceglm    <- function(fit = NA,
         return(list("tbl"     = coef_tbl3 
                     ,"vrows"  = vrows
                     ,"vnames" = vnames
+                    ,"estname" = estname
         ))
     }
     
@@ -269,9 +276,22 @@ niceglm    <- function(fit = NA,
             vnames <- labels
         }
         
+        footnote <- paste("Family = ", simcap(as.character(fit$family[1])),
+                        ", ",
+                        "Link = ", simcap(as.character(fit$family[2])),
+                        ", ",
+                        "N obs = ", nobs(fit),
+                        ", ",
+                        "R2 = ", sprintf("%.3f", round(1-(fit$deviance/fit$null.deviance), 3)),
+                        sep= "")
+        if (htmlTable) footnote <- gsub("R2", "R<sup>2</sup>", footnote)
+        if (!footer) footnote <- ""
+        
         print( 
             htmlTable(ftbl,
                       header = head,
+                      caption = title,
+                      tfoot = footnote,
                       rnames = FALSE,
                       align = alignr,
                       rgroup = vnames,
@@ -289,6 +309,7 @@ niceglm    <- function(fit = NA,
         tbl_uni <- NULL
         vrows_uni <- NULL
         vnames_uni <- NULL
+        nobs_uni <- NULL
         
         for (j in 1:length(covs)){
             
@@ -300,11 +321,14 @@ niceglm    <- function(fit = NA,
             tbl_uni    <- rbind(tbl_uni   , tblj[["tbl"]])
             vrows_uni  <- c(vrows_uni , tblj[["vrows"]])
             vnames_uni <- c(vnames_uni, tblj[["vnames"]])
+            nobs_uni <- c(nobs_uni, paste("(N = ", nobs(fitj), ")", sep=""))
             
         }
         
         ftbl <- tbl_uni
         ftbl <- ftbl[,names(ftbl) != "varname"]
+        
+        estname <- tblj[["estname"]]
         
         head <- c("Variable", estname, "95% CI", "Wald p-value", "LR p-value")
         alignr <- "llccrr"
@@ -319,9 +343,19 @@ niceglm    <- function(fit = NA,
             vnames_uni <- labels
         }
         
+        footnote <- paste("Family = ", simcap(as.character(fitj$family[1])),
+                          ", ",
+                          "Link = ", simcap(as.character(fitj$family[2])),
+                          sep= "")
+        if (!footer) footnote <- ""
+        
+        vnames_uni <- paste(vnames_uni, nobs_uni)
+        
         print(
             htmlTable(ftbl,
                       header = head,
+                      caption = title,
+                      tfoot = footnote,
                       rnames = FALSE,
                       align = alignr,
                       rgroup = vnames_uni,
