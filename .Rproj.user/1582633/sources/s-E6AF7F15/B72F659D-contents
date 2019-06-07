@@ -1,0 +1,40 @@
+
+# rm(list=ls())
+
+library(htmlTable)
+library(devtools)
+
+install_github("lisaerein/nicereg")
+library(nicereg)
+
+data(mtcars)
+
+df <- mtcars
+
+df$gear <- factor(df$gear, c(4, 3, 5), labels = c("four", "three", "five"))
+
+df$am <- factor(rbinom(n = nrow(df), size = 1, prob = 0.5), c(0,1), labels = c("No", "YES"))
+
+fit = glm(vs ~ gear + am + mpg + am*mpg, data = df, family = "binomial")
+
+niceglm(fit)
+
+niceglm(df = df,
+        fit= NA,
+        # covs = test,
+        covs = c("gear", "am", "mpg", "fakevar"),
+        # covs = c("blah", "blah2", "blah3"),
+        family = "binomial",
+        out = "vs",
+        regtype = "uni",
+        # estname = "estname",
+        refcat = T)
+
+df2 <- as.matrix(df)
+
+nicetable(df = df2,
+          by = "vs",
+          covs = c("gear", "am", "mpg", "fakevar"),
+          type = c(2, 3, 1, 1))
+
+

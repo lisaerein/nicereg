@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1559922823545.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "13160067",
+    "lastKnownWriteTime" : 1559923764,
+    "last_content_update" : 1559923764707,
+    "path" : "~/GitHub/nicetable/R/nicetable.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "116,0",
+        "scrollLine" : "90"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
