@@ -7,7 +7,8 @@
 niceglm(fit = NA, df = NA, family = NA, covs = NA, out = NA,
   regtype = "multi", exp = NA, estname = NA, intercept = FALSE,
   refcat = FALSE, labels = NA, overallp = FALSE, est.dec = 2,
-  ci.dec = 2, pval.dec = 3, color = "#EEEEEE", htmlTable = TRUE)
+  ci.dec = 2, pval.dec = 3, color = "#EEEEEE", htmlTable = TRUE,
+  title = "", footer = TRUE)
 }
 \arguments{
 \item{fit}{GLM model object [fit or family/covs/out are REQUIRED].}
@@ -41,6 +42,10 @@ niceglm(fit = NA, df = NA, family = NA, covs = NA, out = NA,
 \item{color}{Character. Color to use for htmlTable striping. Default is "#EEEEEE" (light grey). Use "white" for no striping.}
 
 \item{htmlTable}{Logical. If TRUE, the table will be optimized for html output. Default is TRUE.}
+
+\item{title}{Character. Optional title above table. Default is "".}
+
+\item{footer}{Logical. If TRUE, table will include a footnote with model details, nobs, R2. Default is TRUE.}
 }
 \description{
 This function creates a nice looking table of regression results for a glm model. 

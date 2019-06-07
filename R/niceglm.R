@@ -48,10 +48,26 @@ niceglm    <- function(fit = NA,
     # check user inputs -------------------------------------------------------
     
     if (!is.na(fit[1])) regtype <- "multi"
-    try(if (is.na(fit[1]) & (is.na(regtype) | !(regtype %in% c("uni", "multi")))) stop("regtype must be uni or multi"))
+    try(if (is.na(fit[1]) & (is.na(regtype) | !(regtype %in% c("uni", "multi")))) stop("regtype must be uni or multi\n"))
     
     if (is.na(fit[1])){
-        try(if (class(df) != "data.frame" | is.na(covs[1]) | is.na(out[1]) | is.na(family[1])) stop("must provide model object or dataframe + covariates + outcome + model family"))
+        
+        try(if (class(df) != "data.frame" | is.na(covs[1]) | is.na(out[1]) | is.na(family[1])) stop("must provide model object or dataframe + covariates + outcome + model family\n"))
+        
+        ## remove any covs that do not appear in dataset
+        covs2 <- covs[covs %in% names(df)]
+        if (length(covs2) != length(covs)) cat("Warning! Covariate(s):", covs[!(covs %in% names(df))],"do not exist in dataset\n")
+        covs <- covs2
+        try(if (length(covs) == 0) stop("No valid covs\n"))
+        
+        ## check that outcome appears in dataset
+        out2 <- out[out %in% names(df)]
+        try(if (length(out2) != 1) stop("Outcome: ", out[!(out %in% names(df))]," does not exist in dataset\n"))
+        out <- out2
+        
+        try(if (class(covs[1]) != "character") stop("covs must be a character vector\n"))
+        try(if (class(out[1]) != "character" | length(out) != 1) stop("out must be a single character string\n"))
+        try(if (class(family[1]) != "character" | !family %in% c("gaussian", "binomial", "Gamma", "poisson", "quasibinomial", "quasipoisson")) stop ("invalid family, must be: gaussian, binomial, Gamma, poisson, quasibinomial, quasipoisson\n"))
     }
     
     ### do not include intercepts for univariate tables
