@@ -7,8 +7,8 @@
 niceglm(fit = NA, df = NA, family = NA, covs = NA, out = NA,
   regtype = "multi", exp = NA, estname = NA, intercept = FALSE,
   refcat = FALSE, labels = NA, overallp = FALSE, est.dec = 2,
-  ci.dec = 2, pval.dec = 3, color = "#EEEEEE", htmlTable = TRUE,
-  title = "", footer = TRUE)
+  ci.dec = 2, pval.dec = 3, color = "#EEEEEE", kable = TRUE,
+  htmlTable = FALSE, title = "", footer = TRUE)
 }
 \arguments{
 \item{fit}{GLM model object [fit or family/covs/out are REQUIRED].}
@@ -41,7 +41,9 @@ niceglm(fit = NA, df = NA, family = NA, covs = NA, out = NA,
 
 \item{color}{Character. Color to use for htmlTable striping. Default is "#EEEEEE" (light grey). Use "white" for no striping.}
 
-\item{htmlTable}{Logical. If TRUE, the table will be optimized for html output. Default is TRUE.}
+\item{kable}{Logical. If TRUE, table will be formatted using the kable packge. Default is TRUE.}
+
+\item{htmlTable}{Logical. If TRUE, the table will be printed using htmlTable. Default is FALSE.}
 
 \item{title}{Character. Optional title above table. Default is "".}
 
@@ -50,7 +52,7 @@ niceglm(fit = NA, df = NA, family = NA, covs = NA, out = NA,
 \description{
 This function creates a nice looking table of regression results for a glm model.
 Input either a glm object or dataframe, outcome variable, vector of covariates, model family, and type of analysis (univariate or multiple regression).
-The function returns a dataframe of formatted regression results and prints the results table using htmlTable.
+The function returns a dataframe of formatted regression results and prints the results table using kable or htmlTable.
 }
 \keyword{glm}
 \keyword{linear}

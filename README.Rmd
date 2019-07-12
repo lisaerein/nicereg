@@ -1,0 +1,116 @@
+---
+title: '''nicereg'' R package examples'
+author: "Lisa Rein"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+### Load R packages 
+
+```{r results='hide', warning=FALSE, message=FALSE}
+
+packs <- c("devtools",
+           "knitr",
+           "MASS",
+           "geepack",
+           "htmlTable")
+
+lapply(packs, function(x) require(x, character.only = T))
+
+source("C:/Users/lrein/Documents/GitHub/nicereg/R/niceglm.R")
+source("C:/Users/lrein/Documents/GitHub/nicereg/R/nicegee.R")
+# install_github("lisaerein/nicereg")
+# library(nicetable)
+
+help(nicetable)
+
+options(knitr.kable.NA = '.')
+
+```
+
+### Load _survey_ example dataset from the MASS package
+
+```{r}
+
+head(survey <- survey)
+
+```
+
+### Example: niceglm function for glm models
+
+#### Run univariate linear regression and create a table
+
+```{r results='asis', warning=FALSE}
+
+tab <- niceglm(df = survey,
+                 out = "Height",
+                 covs = c("Sex", "Age", "Clap"),
+                 regtype = "uni",
+                 title = "Univariate results",
+                 estname = "Estimate",
+                 family = "gaussian")
+
+```
+
+#### Run multivariable linear regression and create a table
+
+```{r results='asis', warning=FALSE}
+
+tab <- niceglm(df = survey,
+                 out = "Height",
+                 covs = c("Sex", "Age", "Clap"),
+                 regtype = "multi",
+                 title = "Multivariable results",
+                 estname = "Estimate",
+                 family = "gaussian")
+
+```
+
+#### Create a results table from an existing glm model object
+
+```{r results='asis', warning=FALSE}
+
+survey$lefthanded <- 0
+survey$lefthanded[survey$W.Hnd == "Left"] <- 1
+
+fit <- glm(lefthanded ~ Age + Sex + Height + Exer, data = survey, family = "binomial")
+
+tab <- niceglm(fit,
+               estname = "aOR",
+               overallp = T)
+
+```
+
+### Example: nicegee function for geeglm models
+
+```{r results='asis', warning=FALSE}
+
+survey$clusterid <- rep(1:5, length = nrow(survey))
+
+tab <- nicegee(df = survey,
+                 out = "Height",
+                 covs = c("Sex", "Age", "Clap"),
+                 regtype = "uni",
+                 title = "Uni GEE results",
+                 estname = "Estimate",
+                 family = "gaussian",
+                 id = "clusterid",
+                 corstr = "exch")
+
+```
+
+```{r results='asis', warning=FALSE}
+
+survey$clusterid <- rep(1:5, length = nrow(survey))
+
+tab <- nicegee(df = survey,
+                 out = "Height",
+                 covs = c("Sex", "Age", "Clap"),
+                 regtype = "multi",
+                 title = "Multi GEE results",
+                 estname = "Estimate",
+                 family = "gaussian",
+                 id = "clusterid",
+                 corstr = "exch")
+
+```

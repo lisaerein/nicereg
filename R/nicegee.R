@@ -1,17 +1,19 @@
-#' Lisa's GLM Regression Table Reporting Function
+#' Lisa's GEE Regression Table Reporting Function
 #'
-#' This function creates a nice looking table of regression results for a glm model.
-#' Input either a glm object or dataframe, outcome variable, vector of covariates, model family, and type of analysis (univariate or multiple regression).
+#' This function creates a nice looking table of regression results for a geeglm model.
+#' Input either a geeglm object or dataframe, outcome variable, vector of covariates, id/cluster variable, correlation structure, model family, and type of analysis (univariate or multiple regression).
 #' The function returns a dataframe of formatted regression results and prints the results table using kable or htmlTable.
-#' @param fit GLM model object [fit or family/covs/out are REQUIRED].
-#' @param df Dataframe [fit or df/family/covs/out].
-#' @param family Character. Model family name in quotes ("guassian", "binomial", "poisson") [fit or df/family/covs/out are REQUIRED].
-#' @param covs Character. Vector of covariates to include in model [fit or df/family/covs/out are REQUIRED].
-#' @param out Character. Outcome for regression model [fit or df/family/covs/out are REQUIRED].
-#' @param regtype Logical. Should the covariates be run separately ("uni") or together in a multiple regression model ("multi") [REQUIRED if no fit].
+#' @param fit geeglm model object [fit or family/covs/out/id/corstr are REQUIRED].
+#' @param df Dataframe [fit or family/covs/out/id/corstr REQUIRED].
+#' @param family Character. Model family name in quotes ("guassian", "binomial", "poisson") [fit or family/covs/out/id/corstr are REQUIRED].
+#' @param covs Character. Vector of covariates to include in model [fit or family/covs/out/id/corstr are REQUIRED].
+#' @param out Character. Outcome for regression model [fit or family/covs/out/id/corstr are REQUIRED].
+#' @param id Character. Name of ID/cluster variable [fit or family/covs/out/id/corstr are REQUIRED].
+#' @param corstr Character. Name of correlation structure. Default is "exch".
+#' @param regtype Logical. Should the covariates be run separately ("uni") or together in a multiple regression model ("multi") [fit or family/covs/out/id/corstr are REQUIRED].
 #' @param intercept Logical. If TRUE the intercept will be included in the table (muliple regression only). Default is FALSE.
 #' @param refcat Logical. If TRUE the table will create a separate line for the reference category. Default is FALSE.
-#' @param overallp Logical. If TRUE, a likelihood ratio test pvalue will be calculated for each variable (via drop1, Chisq test). Default is FALSE.
+#' @param overallp Logical. If TRUE, a likelihood ratio test pvalue will be calculated for each variable (via anova, Chisq test). Default is FALSE.
 #' @param est.dec Numeric. Number of decimal places for estimates. Default is 2.
 #' @param ci.dec Numeric. Number of decimal places for 95 percent confidence interval. Default is 2.
 #' @param pval.dec Numeric. Number of decimal places for pvalues. Must be an integer from 1 to 4. Default is 3.
@@ -23,30 +25,32 @@
 #' @param title Character. Optional title above table. Default is "".
 #' @param footer Logical. If TRUE, table will include a footnote with model details, nobs, R2. Default is TRUE.
 #' @keywords glm table logistic poisson linear regression reporting
+#' @importFrom geepack geeglm
 #' @importFrom knitr kable
 #' @importFrom htmlTable htmlTable
 #' @export
-niceglm    <- function(fit = NA,
-                       df = NA,
-                       family = NA,
-                       covs = NA,
-                       out = NA,
-                       regtype = "multi",
-                       exp = NA,
-                       estname = NA,
-                       intercept = FALSE,
-                       refcat = FALSE,
-                       labels = NA,
-                       overallp = FALSE,
-                       est.dec = 2,
-                       ci.dec = 2,
-                       pval.dec = 3,
-                       color = "#EEEEEE",
-                       kable = TRUE,
-                       htmlTable = FALSE,
-                       title = "",
-                       footer = TRUE){
-
+nicegee <- function(fit = NA,
+                    df = NA,
+                    family = NA,
+                    covs = NA,
+                    out = NA,
+                    id = NA,
+                    corstr="exch",
+                    regtype = "multi",
+                    exp = NA,
+                    estname = NA,
+                    intercept = FALSE,
+                    refcat = FALSE,
+                    labels = NA,
+                    overallp = FALSE,
+                    est.dec = 2,
+                    ci.dec = 2,
+                    pval.dec = 3,
+                    color = "#EEEEEE",
+                    kable = TRUE,
+                    htmlTable = FALSE,
+                    title = "",
+                    footer = TRUE){
 
     # check user inputs -------------------------------------------------------
 
@@ -59,22 +63,25 @@ niceglm    <- function(fit = NA,
 
         ## remove any covs that do not appear in dataset
         covs2 <- covs[covs %in% names(df)]
-        if (length(covs2) != length(covs)) cat("Warning! Covariate(s):", covs[!(covs %in% names(df))],"do not exist in dataset\n")
+        if (length(covs2) != length(covs)) cat("Warning! Covariate(s) do not exist in dataset:", covs[!(covs %in% names(df))],"\n")
         covs <- covs2
         try(if (length(covs) == 0) stop("No valid covs\n"))
 
         ## check that outcome appears in dataset
         out2 <- out[out %in% names(df)]
-        try(if (length(out2) != 1) stop("Outcome: ", out[!(out %in% names(df))]," does not exist in dataset\n"))
+        try(if (length(out2) != 1) stop("Outcome  does not exist in dataset: ", out[!(out %in% names(df))],"\n"))
+        out <- out2
+
+        ## check that id variable appears in dataset
+        id2 <- id[id %in% names(df)]
+        try(if (length(id2) != 1) stop("Cluster variable does not exist in dataset: ", id[!(id %in% names(df))],"\n"))
         out <- out2
 
         try(if (class(covs[1]) != "character") stop("covs must be a character vector\n"))
         try(if (class(out[1]) != "character" | length(out) != 1) stop("out must be a single character string\n"))
         try(if (class(family[1]) != "character" | !family %in% c("gaussian", "binomial", "Gamma", "poisson", "quasibinomial", "quasipoisson")) stop ("invalid family, must be: gaussian, binomial, Gamma, poisson, quasibinomial, quasipoisson\n"))
-    }
 
-    ### do not include intercepts for univariate tables
-    if (regtype == "uni") intercept = FALSE
+    }
 
     # make kable the default table format
     if (!kable & !htmlTable) kable <- TRUE
@@ -113,10 +120,10 @@ niceglm    <- function(fit = NA,
         return(pvals2)
     }
 
-    ### function to format summary(glmfit) coef table
+    ### function to format summary(geeglm) coef table
     tblfun <- function(fit){
 
-        coef_tbl <- data.frame(summary(fit)$coef)
+        coef_tbl <- data.frame(summary(fit)$coef, stringsAsFactors = FALSE)
 
         family <- summary(fit)$family["family"]
 
@@ -134,6 +141,9 @@ niceglm    <- function(fit = NA,
         if (is.na(estname) & family == "binomial"      & exp == FALSE) estname <- "Estimate"
         if (is.na(estname) & family == "poisson"       & exp == FALSE) estname <- "Estimate"
         if (is.na(estname) & family == "gaussian"      & exp == FALSE) estname <- "Difference"
+
+        coef_tbl$lower <- coef_tbl[,"Estimate"] - (qnorm(0.975)*coef_tbl[,"Std.err"])
+        coef_tbl$upper <- coef_tbl[,"Estimate"] + (qnorm(0.975)*coef_tbl[,"Std.err"])
 
         if ( exp) coef_tbl$Estimate <- exp(summary(fit)$coef[,"Estimate"])
         if (!exp) coef_tbl$Estimate <- summary(fit)$coef[,"Estimate"]
@@ -158,28 +168,30 @@ niceglm    <- function(fit = NA,
             }
         }
 
-        cimat <- data.frame(confint(fit))
+        cimat <- data.frame(coef_tbl[,c("lower", "upper")])
         if (nrow(coef_tbl) == 1) coef_tbl$CI <- conf(t(cimat))
         if (nrow(coef_tbl) >  1) coef_tbl$CI <- apply(cimat,1,conf)
 
         coef_tbl$p_value <- pvfun(pvals = coef_tbl$p_value)
 
-        # coef_tbl <- coef_tbl[,c(estname, "CI", "p_value")]
-
         if (!overallp) {
-            dr1fit <- data.frame(drop1(fit, scope = attr(terms(fit), "term.labels")))
+            dr1fit <- data.frame(summary(aov(fit))[[1]], stringsAsFactors = FALSE)
             dr1fit$op_value <- NA
         }
         if ( overallp) {
-            dr1fit <- data.frame(drop1(fit, scope = attr(terms(fit), "term.labels"), test = "Chisq"))
-            names(dr1fit)[grepl("Pr" , names(dr1fit))] <- "op_value"
-            dr1fit$op_value <- pvfun(pvals = dr1fit$op_value)
+            dr1fit <- data.frame(summary(aov(fit))[[1]])
+            dr1fit$op_value <- pvfun(pvals = dr1fit[,names(dr1fit)[grepl("Pr", names(dr1fit))]])
         }
 
-        row.names(dr1fit)[1] <- "(Intercept)"
-        dr1fit$Df[1] <- 1
+        dr1fit$varname <- trim(row.names(dr1fit))
+        dr1fit <- dr1fit[dr1fit$varname != "Residuals",]
 
-        dr1fit$varname <- row.names(dr1fit)
+        blank <- dr1fit[1,]
+        blank[1,] <- rep(NA, ncol(blank))
+        row.names(blank) <- "(Intercept)"
+        blank$Df <- 1
+
+        dr1fit <- rbind(blank, dr1fit)
 
         coef_tbl$coefname <- row.names(coef_tbl)
 
@@ -189,7 +201,7 @@ niceglm    <- function(fit = NA,
         }
 
         ### get variable classes
-        vtypes <- data.frame(attr(terms(fit), "dataClasses")[-1])
+        vtypes <- data.frame(attr(terms(fit), "dataClasses")[-1], stringsAsFactors = FALSE)
         names(vtypes) <- "vtype"
         vtypes$varname <- row.names(vtypes)
 
@@ -214,7 +226,8 @@ niceglm    <- function(fit = NA,
         coef_tbl2 <- merge(coef_tbl,  dr1fit, by = "varname", all.x = TRUE, all.y = FALSE, sort = FALSE)
         coef_tbl2 <- merge(coef_tbl2,   refs, by = "varname", all.x = TRUE, all.y = FALSE, sort = FALSE)
         coef_tbl2 <- merge(coef_tbl2, vtypes, by = "varname", all.x = TRUE, all.y = FALSE, sort = FALSE)
-        coef_tbl2$nobs <- nobs(fit)
+
+        coef_tbl2$vtype[grepl(":",coef_tbl2$coefname)] <- "interaction"
 
         coef_tbl2$levname <- NA
         for (i in 1:nrow(coef_tbl2)){
@@ -233,8 +246,8 @@ niceglm    <- function(fit = NA,
         # create a duplicate row for header - just for factors
         coef_tbl2 <- coef_tbl2[rep(seq_len(nrow(coef_tbl2)), each=2),]
         coef_tbl2$dup <- 0
-        coef_tbl2$dup[grepl(".1", row.names(coef_tbl2), fixed = T)] <- 1
-        coef_tbl2 <- subset(coef_tbl2, dup == 0 | (vtype %in% c("character", "factor") & vseq == 1))
+        coef_tbl2$dup[grepl(".1", row.names(coef_tbl2))] <- 1
+        coef_tbl2 <- subset(coef_tbl2, dup == 0 | (vtype %in% c("character", "factor", "interaction") & vseq == 1))
 
         coef_tbl2 <- coef_tbl2[order(coef_tbl2$order, -coef_tbl2$dup),]
 
@@ -249,12 +262,15 @@ niceglm    <- function(fit = NA,
         coef_tbl2[coef_tbl2$dup == 1, estname  ] <- NA
         coef_tbl2[coef_tbl2$dup == 1, "CI"     ] <- NA
         coef_tbl2[coef_tbl2$dup == 1, "p_value"] <- NA
-        coef_tbl2[coef_tbl2$dup == 0 & coef_tbl2$vtype %in% c("character", "factor"), "op_value"] <- NA
+        coef_tbl2[coef_tbl2$dup == 0 & !(coef_tbl2$vtype %in% c("numeric", "integer")), "op_value"] <- NA
 
         coef_tbl2$order <- 1:nrow(coef_tbl2)
         coef_tbl2$vseq <- ave(coef_tbl2$order, coef_tbl2$varname, FUN = function(x) seq_along(x))
         coef_tbl2$vrows <- ave(coef_tbl2$order, coef_tbl2$varname, FUN = function(x) length(x))
         coef_tbl2$varname[coef_tbl2$vseq > 1] <- NA
+
+        coef_tbl2$comp[coef_tbl2$dup == 0 & coef_tbl2$vtype == "interaction"] <- coef_tbl2$coefname[coef_tbl2$dup == 0 & coef_tbl2$vtype == "interaction"]
+        coef_tbl2$compref[coef_tbl2$dup == 0 & coef_tbl2$vtype == "interaction"] <- coef_tbl2$coefname[coef_tbl2$dup == 0 & coef_tbl2$vtype == "interaction"]
 
         if ( refcat) coef_tbl3 <- coef_tbl2[,c("varname", "compref", estname, "CI", "p_value", "op_value")]
         if (!refcat) coef_tbl3 <- coef_tbl2[,c("varname", "comp"   , estname, "CI", "p_value", "op_value")]
@@ -274,9 +290,16 @@ niceglm    <- function(fit = NA,
     if (regtype == "multi") {
 
         ### if model is not provided, run the model
-        if (is.na(fit[1]) & sum(!is.na(covs) > 0)  & !is.na(out) & !is.na(family)){
+        if (is.na(fit[1]) & sum(!is.na(covs) > 0)  & !is.na(out) & !is.na(family) & !is.na(id)){
+
+            dfc <- df[complete.cases(df[,c(out, covs, id)]),]
+
             form <- as.formula(paste(out, "~", paste(covs, collapse = " + ")))
-            fit <- glm(form, data = df, family = family)
+            fit <- geeglm(form,
+                          id = dfc[,id],
+                          data = dfc,
+                          family = family,
+                          corstr = corstr)
         }
 
         tbl <- tblfun(fit)
@@ -299,16 +322,16 @@ niceglm    <- function(fit = NA,
         }
 
         footnote <- paste("Family = ", simcap(as.character(fit$family[1])),
-                          " (",
-                          simcap(as.character(fit$family[2])),
-                          "), ",
+                          # " (",
+                          # simcap(as.character(fit$family[2])),
+                          ", ",
                           "N obs = ", nobs(fit),
-                          # ", ",
-                          # "R2 = ", sprintf("%.3f", round(1-(fit$deviance/fit$null.deviance), 3)),
+                          ", ",
+                          "N clusters = ", length(unique(fit$id)),
+                          ", ",
+                          "Corstr = ", simcap(as.character(fit$corstr)),
                           sep= "")
-        # if (htmlTable) footnote <- gsub("R2", "R<sup>2</sup>", footnote)
         if (!footer) footnote <- ""
-
         if (htmlTable){
             print(
                 htmlTable(ftbl,
@@ -343,7 +366,6 @@ niceglm    <- function(fit = NA,
             )
         }
 
-
     }
 
     # Create univariate regression table --------------------------------------
@@ -357,15 +379,21 @@ niceglm    <- function(fit = NA,
 
         for (j in 1:length(covs)){
 
+            dfj <- df[complete.cases(df[,c(out, covs[j], id)]),]
+
             formj <- as.formula(paste(out, "~", covs[j]))
-            fitj <- glm(formj, data = df, family = family)
+            fitj <- geeglm(formj,
+                           id = dfj[,id],
+                           data = dfj,
+                           family = family,
+                           corstr = corstr)
 
             tblj <- tblfun(fitj)
 
             tbl_uni    <- rbind(tbl_uni   , tblj[["tbl"]])
             vrows_uni  <- c(vrows_uni , tblj[["vrows"]])
             vnames_uni <- c(vnames_uni, tblj[["vnames"]])
-            nobs_uni <- c(nobs_uni, paste("(N = ", nobs(fitj), ")", sep=""))
+            nobs_uni <- c(nobs_uni, paste("(N = ", nobs(fitj), ", N clusters = ", length(unique(fitj$id)), ")", sep=""))
 
         }
 
@@ -387,11 +415,9 @@ niceglm    <- function(fit = NA,
             vnames_uni <- labels
         }
 
-
         footnote <- paste("Family = ", simcap(as.character(fitj$family[1])),
-                          " (",
-                          simcap(as.character(fitj$family[2])),
-                          ")",
+                          ", ",
+                          "Corstr = ", simcap(as.character(fitj$corstr)),
                           sep= "")
         if (!footer) footnote <- ""
 
@@ -411,7 +437,6 @@ niceglm    <- function(fit = NA,
                           css.cell = "padding-left: 3em; padding-right: 1em;")
             )
         }
-
         if (kable){
 
             ftbl$comp <- as.character(ftbl$comp)
@@ -431,7 +456,10 @@ niceglm    <- function(fit = NA,
                       align = substr(alignr, 2, nchar(alignr)))
             )
         }
+
     }
 
     return(ftbl)
+
+
 }
