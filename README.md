@@ -14,12 +14,10 @@ packs <- c("devtools",
 
 lapply(packs, function(x) require(x, character.only = T))
 
-source("C:/Users/lrein/Documents/GitHub/nicereg/R/niceglm.R")
-source("C:/Users/lrein/Documents/GitHub/nicereg/R/nicegee.R")
-# install_github("lisaerein/nicereg")
-# library(nicetable)
+install_github("lisaerein/nicereg")
+library(nicereg)
 
-help(nicetable)
+help(nicereg)
 
 options(knitr.kable.NA = '.')
 ```
