@@ -2,6 +2,9 @@
 
 export(nicegee)
 export(niceglm)
+export(nicepolr)
+importFrom(MASS,polr)
+importFrom(car,Anova)
 importFrom(geepack,geeglm)
 importFrom(htmlTable,htmlTable)
 importFrom(knitr,kable)

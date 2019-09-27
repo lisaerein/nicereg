@@ -31,6 +31,8 @@ niceglm(fit = NA, df = NA, family = NA, covs = NA, out = NA,
 
 \item{refcat}{Logical. If TRUE the table will create a separate line for the reference category. Default is FALSE.}
 
+\item{labels}{Character. Vector of labels for covariates. Default is NA (use variable names).}
+
 \item{overallp}{Logical. If TRUE, a likelihood ratio test pvalue will be calculated for each variable (via drop1, Chisq test). Default is FALSE.}
 
 \item{est.dec}{Numeric. Number of decimal places for estimates. Default is 2.}

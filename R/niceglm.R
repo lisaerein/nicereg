@@ -11,6 +11,7 @@
 #' @param regtype Logical. Should the covariates be run separately ("uni") or together in a multiple regression model ("multi") [REQUIRED if no fit].
 #' @param intercept Logical. If TRUE the intercept will be included in the table (muliple regression only). Default is FALSE.
 #' @param refcat Logical. If TRUE the table will create a separate line for the reference category. Default is FALSE.
+#' @param labels Character. Vector of labels for covariates. Default is NA (use variable names).
 #' @param overallp Logical. If TRUE, a likelihood ratio test pvalue will be calculated for each variable (via drop1, Chisq test). Default is FALSE.
 #' @param est.dec Numeric. Number of decimal places for estimates. Default is 2.
 #' @param ci.dec Numeric. Number of decimal places for 95 percent confidence interval. Default is 2.
