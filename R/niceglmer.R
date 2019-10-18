@@ -25,7 +25,7 @@
 #' @param title Character. Optional title above table. Default is "".
 #' @param footer Logical. If TRUE, table will include a footnote with model details, nobs, R2. Default is TRUE.
 #' @keywords glmer mixed random effects table logistic poisson linear regression reporting nice lisaerein
-#' @importFrom lme4 glmer lmer
+#' @importFrom lme4 glmer lmer glmerControl lmerControl
 #' @importFrom knitr kable
 #' @importFrom htmlTable htmlTable
 #' @export
