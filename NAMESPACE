@@ -2,9 +2,12 @@
 
 export(nicegee)
 export(niceglm)
+export(niceglmer)
 export(nicepolr)
 importFrom(MASS,polr)
 importFrom(car,Anova)
 importFrom(geepack,geeglm)
 importFrom(htmlTable,htmlTable)
 importFrom(knitr,kable)
+importFrom(lme4,glmer)
+importFrom(lme4,lmer)
