@@ -338,7 +338,7 @@ niceglmer <- function(fit = NA
                               sep= "")
             if (!is.na(random)){
                   footnote <- paste("Mixed effecs regression, Family = "
-                                   ,simcap(as.character(summary(fitj)$family))
+                                   ,simcap(as.character(summary(fit)$family))
                                    ,", "
                                    ,"N obs = ", nobs(fit)
                                    ,sep= ""
