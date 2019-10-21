@@ -1,7 +1,7 @@
 #' Lisa's GLMER Regression Table Reporting Function
 #'
-#' This function creates a nice looking table of regression results for a glmer (lme4 package) model.
-#' Input either a glmer object or dataframe, outcome variable, vector of covariates, random effects statement, model family, and type of analysis (univariate or multiple regression).
+#' This function creates a nice looking table of regression results for a lmer or glmer (lme4 package) model.
+#' Input either a lmer/glmer object or dataframe, outcome variable, vector of covariates, random effects statement, model family, and type of analysis (univariate or multiple regression).
 #' The function returns a dataframe of formatted regression results and prints the results table using kable or htmlTable.
 #' @param fit glmer model object [fit or family/covs/out/random are REQUIRED].
 #' @param df Dataframe [fit or family/covs/out/random REQUIRED].
@@ -25,6 +25,7 @@
 #' @param title Character. Optional title above table. Default is "".
 #' @param footer Logical. If TRUE, table will include a footnote with model details, nobs, R2. Default is TRUE.
 #' @keywords glmer mixed random effects table logistic poisson linear regression reporting nice lisaerein
+#' @import lmerTest
 #' @importFrom lme4 glmer lmer glmerControl lmerControl
 #' @importFrom knitr kable
 #' @importFrom htmlTable htmlTable
@@ -50,7 +51,7 @@ niceglmer <- function(fit = NA
                      ,htmlTable = FALSE
                      ,title = ""
                      ,footer = TRUE
-                      ){
+                     ){
 
       # check user inputs -------------------------------------------------------
 
@@ -134,7 +135,7 @@ niceglmer <- function(fit = NA
 
             coef_tbl <- data.frame(summary(fit)$coef, stringsAsFactors = FALSE)
 
-            family <- summary(fit)$family
+            family <- family(fit)["family"]
 
             exp <- ifelse(is.na(exp) & family == "gaussian", FALSE, TRUE)
 
@@ -193,6 +194,7 @@ niceglmer <- function(fit = NA
 
             dr1fit$varname <- trim(row.names(dr1fit))
             dr1fit <- dr1fit[dr1fit$varname != "Residuals",]
+            if (family == "gaussian") names(dr1fit)[names(dr1fit) == "NumDF"] <- "Df"
 
             blank <- dr1fit[1,]
             blank[1,] <- rep(NA, ncol(blank))
@@ -306,11 +308,20 @@ niceglmer <- function(fit = NA
                   form <- as.formula(paste(paste(out, "~", paste(covs, collapse = " + ")),
                                            "+",
                                            random))
-                  fit <- glmer(form
-                              ,data = dfc
-                              ,family = family
-                              ,control = glmerControl(optimizer = optimizer)
-                              )
+
+                  if (family != "gaussian"){
+                      fit <- glmer(form
+                                  ,data = dfc
+                                  ,family = family
+                                  ,control = glmerControl(optimizer = optimizer)
+                                  )
+                  }
+                  if (family == "gaussian"){
+                      fit <- lmerTest::lmer(form
+                                           ,data = dfc
+                                           ,control = lmerControl(optimizer = optimizer)
+                                           )
+                  }
             }
 
             tbl <- tblfun(fit)
@@ -332,13 +343,13 @@ niceglmer <- function(fit = NA
                   vnames <- labels
             }
 
-            footnote <- paste("Family = ", simcap(as.character(summary(fit)$family)),
+            footnote <- paste("Family = ",  simcap(as.character(family(fit)["family"])),
                               ", ",
                               "N obs = ", nobs(fit),
                               sep= "")
             if (!is.na(random)){
                   footnote <- paste("Mixed effecs regression, Family = "
-                                   ,simcap(as.character(summary(fit)$family))
+                                   ,simcap(as.character(family(fit)["family"]))
                                    ,", "
                                    ,"N obs = ", nobs(fit)
                                    ,sep= ""
@@ -402,11 +413,20 @@ niceglmer <- function(fit = NA
                   formj <- as.formula(paste(paste(out, "~", covs[j]),
                                            "+",
                                            random))
-                  fitj <- glmer(formj
-                               ,data = dfj
-                               ,family = family
-                               ,control = glmerControl(optimizer = optimizer)
-                               )
+
+                  if (family != "gaussian"){
+                      fitj <- glmer(formj
+                                   ,data = dfj
+                                   ,family = family
+                                   ,control = glmerControl(optimizer = optimizer)
+                                   )
+                  }
+                  if (family == "gaussian"){
+                      fitj <- lmerTest::lmer(formj
+                                            ,data = dfj
+                                            ,control = lmerControl(optimizer = optimizer)
+                                            )
+                  }
 
                   tblj <- tblfun(fitj)
 
@@ -433,9 +453,9 @@ niceglmer <- function(fit = NA
                   vnames_uni <- labels
             }
 
-            footnote <- paste("Family =", simcap(as.character(summary(fitj)$family)))
+            footnote <- paste("Family =", simcap(as.character(family(fitj)["family"])))
             if (!is.na(random)){
-                  footnote <- paste("Mixed effecs regression, Family =", simcap(as.character(summary(fitj)$family)))
+                  footnote <- paste("Mixed effecs regression, Family =",  simcap(as.character(family(fitj)["family"])))
             }
             if (!footer) footnote <- ""
 

@@ -54,8 +54,8 @@ niceglmer(fit = NA, df = NA, family = NA, covs = NA, out = NA,
 \item{footer}{Logical. If TRUE, table will include a footnote with model details, nobs, R2. Default is TRUE.}
 }
 \description{
-This function creates a nice looking table of regression results for a glmer (lme4 package) model.
-Input either a glmer object or dataframe, outcome variable, vector of covariates, random effects statement, model family, and type of analysis (univariate or multiple regression).
+This function creates a nice looking table of regression results for a lmer or glmer (lme4 package) model.
+Input either a lmer/glmer object or dataframe, outcome variable, vector of covariates, random effects statement, model family, and type of analysis (univariate or multiple regression).
 The function returns a dataframe of formatted regression results and prints the results table using kable or htmlTable.
 }
 \keyword{effects}
