@@ -79,7 +79,7 @@ niceglmer <- function(fit = NA
             ## check that random variable(s) appears in dataset
             if (!is.na(random)){
                   randvars <- gsub(" ", "", random)
-                  randvars <- gsub("\\(|\\)|\\+", "-", randvars)
+                  randvars <- gsub("\\(|\\)|\\+|\\:|\\*|\\/", "-", randvars)
                   randvars <- gsub("\\|", "-", randvars)
                   randvars <- strsplit(randvars, "-")[[1]]
                   randvars <- randvars[!(randvars %in% c("", "1"))]
