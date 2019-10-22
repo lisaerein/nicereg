@@ -348,7 +348,7 @@ niceglmer <- function(fit = NA
                               "N obs = ", nobs(fit),
                               sep= "")
             if (!is.na(random)){
-                  footnote <- paste("Mixed effecs regression, Family = "
+                  footnote <- paste("Mixed effects regression, Family = "
                                    ,simcap(as.character(family(fit)["family"]))
                                    ,", "
                                    ,"N obs = ", nobs(fit)
@@ -455,7 +455,7 @@ niceglmer <- function(fit = NA
 
             footnote <- paste("Family =", simcap(as.character(family(fitj)["family"])))
             if (!is.na(random)){
-                  footnote <- paste("Mixed effecs regression, Family =",  simcap(as.character(family(fitj)["family"])))
+                  footnote <- paste("Mixed effects regression, Family =",  simcap(as.character(family(fitj)["family"])))
             }
             if (!footer) footnote <- ""
 
