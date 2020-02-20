@@ -295,9 +295,8 @@ nicegee <- function(fit = NA,
 
             dfc <- df[complete.cases(df[,c(out, covs, id)]),]
 
-            dfc[,id] <- factor(dfc[,id])
-
             dfc <- dfc[order(dfc[,id]),]
+            dfc$xxx_idc_xxx <- factor(dfc[,id])
 
             for (q in 1:length(covs)){
                 if ("factor" %in% class(dfc[,covs[q]])) dfc[,covs[q]] <- droplevels(dfc[,covs[q]])
@@ -305,8 +304,9 @@ nicegee <- function(fit = NA,
 
             form <- as.formula(paste(out, "~", paste(covs, collapse = " + ")))
             fit <- geeglm(form,
-                          id = dfc[,id],
+                          # id = dfc[,id],
                           # id = id,
+                          id = xxx_idc_xxx,
                           data = dfc,
                           family = family,
                           corstr = corstr)
@@ -391,16 +391,17 @@ nicegee <- function(fit = NA,
 
             dfj <- df[complete.cases(df[,c(out, covs[j], id)]),]
 
-            dfj[,id] <- factor(dfj[,id])
-
+            # dfj[,id] <- factor(dfj[,id])
             dfj <- dfj[order(dfj[,id]),]
+            dfj$xxx_idj_xxx <- factor(dfj[,id])
 
             if ("factor" %in% class(dfj[,covs[j]])) dfj[,covs[j]] <- droplevels(dfj[,covs[j]])
 
             formj <- as.formula(paste(out, "~", covs[j]))
             fitj <- geeglm(formj,
-                           id = dfj[,id],
+                           # id = dfj[,id],
                            # id = id,
+                           id = xxx_idj_xxx,
                            data = dfj,
                            family = family,
                            corstr = corstr)
