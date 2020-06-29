@@ -384,10 +384,12 @@ niceglmer <- function(fit = NA
                   if (title != "") footnote <- paste(title, "; ", footnote, sep="")
 
                   print(
-                        kable(ftbl,
-                              row.names = FALSE,
-                              caption = footnote,
-                              align = substr(alignr, 2, nchar(alignr)))
+                        kable(ftbl
+                              ,row.names = FALSE
+                              ,caption = footnote
+                              ,align = substr(alignr, 2, nchar(alignr))
+                              ,format = "markdown"
+                              )
                   )
             }
 
@@ -488,10 +490,12 @@ niceglmer <- function(fit = NA
                   if (title != "") footnote <- paste(title, "; ", footnote, sep="")
 
                   print(
-                        kable(ftbl,
-                              row.names = FALSE,
-                              caption = footnote,
-                              align = substr(alignr, 2, nchar(alignr)))
+                        kable(ftbl
+                              ,row.names = FALSE
+                              ,caption = footnote
+                              ,align = substr(alignr, 2, nchar(alignr))
+                              ,format = "markdown"
+                              )
                   )
             }
 

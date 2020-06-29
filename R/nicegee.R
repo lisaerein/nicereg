@@ -471,7 +471,8 @@ nicegee <- function(fit = NA,
                 kable(ftbl,
                       row.names = FALSE,
                       caption = footnote,
-                      align = substr(alignr, 2, nchar(alignr)))
+                      align = substr(alignr, 2, nchar(alignr)),
+                      format = "markdown")
             )
         }
 

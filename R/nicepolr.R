@@ -373,7 +373,8 @@ nicepolr    <- function(fit = NA
         kable(x = ftbl,
               row.names = FALSE,
               caption = title,
-              align = alignr)
+              align = alignr,
+              format = "markdown")
       )
     }
   }
@@ -485,7 +486,8 @@ nicepolr    <- function(fit = NA
         kable(x = ftbl,
               row.names = FALSE,
               caption = title,
-              align = alignr)
+              align = alignr,
+              format = "markdown")
       )
     }
 
